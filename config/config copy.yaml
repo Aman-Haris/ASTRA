@@ -1,0 +1,14 @@
+nasa:
+  api_key: "your-api_key-here"
+  endpoints:
+    neows: "https://api.nasa.gov/neo/rest/v1/neo/"
+    sbdb: "https://ssd-api.jpl.nasa.gov/sbdb.api"
+    cad: "https://api.nasa.gov/DONKI/CAD"
+
+database:
+  postgresql:
+    host: "localhost"
+    port: 5432
+    dbname: "astra"
+    user: "astra_user"
+    password: "astra_password"
