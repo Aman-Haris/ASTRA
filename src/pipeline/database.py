@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Float, String, Boolean, DateTime, JSON
+from sqlalchemy import create_engine, Column, Float, String, Boolean, DateTime, JSON, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import yaml
@@ -9,28 +9,43 @@ Base = declarative_base()
 class Asteroid(Base):
     __tablename__ = 'asteroids'
     
-    # Core fields (required)
+    # Core identification
     id = Column(String, primary_key=True)
     name = Column(String)
+    designation = Column(String)
+    
+    # Physical characteristics
     diameter_km = Column(Float)
+    absolute_magnitude = Column(Float)
     hazardous = Column(Boolean)
+    
+    # Orbital parameters (from SBDB)
     orbital_eccentricity = Column(Float)
     orbital_inclination = Column(Float)
     orbital_period_yr = Column(Float)
     orbital_semi_major_axis = Column(Float)
+    orbit_class = Column(String)
     
-    # Close approach fields
-    close_approach_date = Column(DateTime)
-    miss_distance_km = Column(Float)
-    velocity_km_s = Column(Float)
+    # Close approach data (from CAD)
+    next_approach_date = Column(DateTime)
+    next_approach_distance_km = Column(Float)
+    next_approach_velocity = Column(Float)
+    close_approach_count = Column(Integer)
     
-    # Extended fields (optional)
-    orbit_class = Column(String)  # Added this field
-    source_data = Column(JSON)    # For storing raw API responses
+    # Derived metrics
+    tisserand = Column(Float)
+    palermo_scale = Column(Float)
+    torino_scale = Column(Integer)
+    orbit_cluster = Column(Integer)
+    
+    # Raw data storage
+    neows_data = Column(JSON)
+    sbdb_data = Column(JSON)
+    cad_data = Column(JSON)
     
     # Metadata
     last_updated = Column(DateTime, default=datetime.utcnow)
-    data_source = Column(String)  # 'neows', 'sbdb', etc.
+    data_sources = Column(String)
 
 class AsteroidDatabase:
     def __init__(self, config_path='config/config.yaml'):
@@ -49,20 +64,12 @@ class AsteroidDatabase:
     def upsert_asteroid(self, data: dict):
         session = self.Session()
         
-        # Filter only valid columns for Asteroid model
-        valid_columns = {c.name for c in Asteroid.__table__.columns}
-        filtered_data = {k: v for k, v in data.items() if k in valid_columns}
-        
-        # Store raw data in source_data if needed
-        if 'source_data' not in filtered_data:
-            filtered_data['source_data'] = data
-        
         asteroid = session.query(Asteroid).filter_by(id=data['id']).first()
         if not asteroid:
-            asteroid = Asteroid(**filtered_data)
+            asteroid = Asteroid(**data)
             session.add(asteroid)
         else:
-            for key, value in filtered_data.items():
+            for key, value in data.items():
                 setattr(asteroid, key, value)
         
         session.commit()

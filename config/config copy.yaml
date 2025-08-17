@@ -3,7 +3,6 @@ nasa:
   endpoints:
     neows: "https://api.nasa.gov/neo/rest/v1/neo/"
     sbdb: "https://ssd-api.jpl.nasa.gov/sbdb.api"
-    cad: "https://api.nasa.gov/DONKI/CAD"
 
 database:
   postgresql:

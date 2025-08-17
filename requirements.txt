@@ -5,3 +5,7 @@ psycopg2-binary
 pyyaml
 python-dotenv
 numpy
+tenacity
+pydantic
+apscheduler
+scikit-learn
